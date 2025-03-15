@@ -48,5 +48,5 @@ export default function ResourcesContainer() {
     };
   }, []);
 
-  return <div ref={containerRef} style={{ height: "100vh", width: "100%" }} />;
+  return <div ref={containerRef} className="h-full w-full" />;
 }
