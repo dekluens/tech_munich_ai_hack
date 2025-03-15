@@ -12,31 +12,48 @@ export default function PdfComponent({ filename }: PdfComponentProps) {
   useEffect(() => {
     const container = containerRef.current;
     const NutrientViewer = (window as any).NutrientViewer;
-    const defaultItems = NutrientViewer.defaultToolbarItems;
-    console.log(defaultItems);
 
     async function fetchAndLoadPdf() {
       try {
-        // This calls our Next.js API route to get your PDF
-        // const response = await fetch("/api/pdf/my.pdf");
-        // const blob = await response.blob();
-        // const objectUrl = URL.createObjectURL(blob);
-
         // Load returns a Promise that resolves to the instance
         const instance = await NutrientViewer.load({
           container,
           document: `/${filename}`,
+          // Here is where we define our custom inline text selection item:
+          inlineTextSelectionToolbarItems: (
+            { defaultItems, hasDesktopLayout },
+            selection
+          ) => {
+            // Create a custom item that shows a "?" and logs the selected text
+            const questionMarkItem = {
+              type: "custom",
+              id: "question-mark-button",
+              title: "?", // Will display "?" on the button
+              onPress: () => {
+                // Log the selection to the console
+                // "selection.text" holds the currently selected text
+                if (selection && selection.text) {
+                  console.log("Selected text:", selection.text);
+                } else {
+                  console.log("No text selected.");
+                }
+              },
+            };
+
+            // Only add the custom button on desktop layout for this example
+            if (hasDesktopLayout) {
+              return [...defaultItems, questionMarkItem];
+            }
+            return defaultItems;
+          },
         });
 
-        // Now that you have the instance, you can adjust the toolbar, etc.
+        // Example of customizing the main toolbar items:
         const items = instance.toolbarItems;
-        const allowedTypes = ["export-pdf", "search", "pager"]; // define allowed types here
+        const allowedTypes = ["export-pdf", "search", "pager"];
         instance.setToolbarItems(
           items.filter((item: any) => allowedTypes.includes(item.type))
         );
-
-        // You could also save `instance` to a ref if you need it later
-        // instanceRef.current = instance;
       } catch (err) {
         console.error("Error loading PDF:", err);
       }
@@ -50,7 +67,7 @@ export default function PdfComponent({ filename }: PdfComponentProps) {
     return () => {
       NutrientViewer?.unload(container);
     };
-  }, []);
+  }, [filename]);
 
   return <div ref={containerRef} className="h-full w-full" />;
 }
