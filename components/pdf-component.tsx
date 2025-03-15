@@ -20,7 +20,6 @@ interface TextSelection {
   range?: Range;
 }
 
-
 interface PdfComponentProps {
   filename: string;
 }
@@ -34,12 +33,23 @@ export default function PdfComponent({ filename }: PdfComponentProps) {
 
     async function fetchAndLoadPdf() {
       try {
-        // Create a custom DOM node for our larger question mark.
+        // Create a custom DOM node for our larger question mark with improved styling
         const questionMarkNode = document.createElement("div");
         questionMarkNode.textContent = "?";
-        questionMarkNode.style.fontSize = "24px"; // Increase size here
-        questionMarkNode.style.lineHeight = "24px";
+        questionMarkNode.style.fontSize = "18px";
+        questionMarkNode.style.lineHeight = "1";
         questionMarkNode.style.cursor = "pointer";
+        questionMarkNode.style.backgroundColor = "#4a5568";
+        questionMarkNode.style.color = "white";
+        questionMarkNode.style.width = "28px";
+        questionMarkNode.style.height = "28px";
+        questionMarkNode.style.borderRadius = "50%";
+        questionMarkNode.style.display = "flex";
+        questionMarkNode.style.alignItems = "center";
+        questionMarkNode.style.justifyContent = "center";
+        questionMarkNode.style.padding = "4px";
+        questionMarkNode.style.boxShadow = "0 1px 3px rgba(0,0,0,0.2)";
+        questionMarkNode.style.transition = "background-color 0.2s ease";
 
         // Define our custom item with the DOM node.
         const questionMarkItem: ToolbarItem = {
