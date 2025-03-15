@@ -3,6 +3,7 @@ import { User, Bot, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRef, useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
 
 // Define message type
 interface Message {
@@ -168,7 +169,11 @@ export default function ChatInterface() {
                   : "bg-white border border-gray-200 text-gray-800 rounded-tl-none"
               }`}
             >
-              {message.content}
+              {message.role === "assistant" ? (
+                <ReactMarkdown>{message.content}</ReactMarkdown>
+              ) : (
+                message.content
+              )}
             </div>
             {message.role === "user" && (
               <div className="bg-blue-600 p-2 rounded-full ml-3 flex-shrink-0">
