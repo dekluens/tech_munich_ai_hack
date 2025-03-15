@@ -67,11 +67,61 @@ export default function PdfComponent({ filename }: PdfComponentProps) {
             selection: TextSelection
           ) => {
             // Overwrite the onPress to have the correct selection context.
-            questionMarkItem.onPress = () => {
-              if (selection && selection.text) {
-                console.log("Selected text:", selection.text);
-              } else {
-                console.log("No text selected.");
+            questionMarkItem.onPress = async () => {
+              try {
+                const textSelection = instance.getTextSelection();
+                const text = await textSelection.getText();
+
+                if (text && text.trim()) {
+                  console.log("Selected text:", text);
+
+                  try {
+                    const response = await fetch(
+                      "http://127.0.0.1:8000/describe",
+                      {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                          accept: "application/json",
+                        },
+                        body: JSON.stringify({
+                          text: text,
+                        }),
+                      }
+                    );
+
+                    const data = await response.json();
+                    console.log("API response:", data.text);
+
+                    // Send the response to the chat component
+                    if ((window as any).addChatMessage) {
+                      (window as any).addChatMessage(data.text);
+                    }
+                  } catch (error) {
+                    console.error("Error calling API:", error);
+                    // Send error message to chat
+                    if ((window as any).addChatMessage) {
+                      (window as any).addChatMessage(
+                        "Sorry, I couldn't process that text selection."
+                      );
+                    }
+                  }
+                } else {
+                  console.log("No text selected.");
+                  // Optionally send a message to chat about no text being selected
+                  if ((window as any).addChatMessage) {
+                    (window as any).addChatMessage(
+                      "Please select some text in the document first."
+                    );
+                  }
+                }
+              } catch (error) {
+                console.error("Error getting text selection:", error);
+                if ((window as any).addChatMessage) {
+                  (window as any).addChatMessage(
+                    "There was an error processing your selection."
+                  );
+                }
               }
             };
 

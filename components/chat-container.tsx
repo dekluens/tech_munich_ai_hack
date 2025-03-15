@@ -1,22 +1,28 @@
 "use client";
-import { useChat } from "@ai-sdk/react";
 import { User, Bot, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
+
+// Define message type
+interface Message {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+}
 
 export default function ChatInterface() {
-  const { messages, input, handleInputChange, handleSubmit, isLoading } =
-    useChat({
-      initialMessages: [
-        {
-          id: "1",
-          role: "assistant",
-          content:
-            "Hello! I am your German Bureaucracy Assistant. How can I help you today?",
-        },
-      ],
-    });
+  // Replace useChat with manual state management
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "1",
+      role: "assistant",
+      content:
+        "Hello! I am your German Bureaucracy Assistant. How can I help you today?",
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -24,6 +30,79 @@ export default function ChatInterface() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Function to add a new message
+  const addMessage = (role: "user" | "assistant", content: string) => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now().toString(),
+        role,
+        content,
+      },
+    ]);
+  };
+
+  // Function to handle input change
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+  };
+
+  // Function to handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!input.trim()) return;
+
+    // Add user message
+    addMessage("user", input);
+
+    // Clear input
+    setInput("");
+
+    // Set loading state
+    setIsLoading(true);
+
+    try {
+      // Here you would call your API to get a response
+      // For example:
+      // const response = await fetch('/api/chat', {
+      //   method: 'POST',
+      //   body: JSON.stringify({ message: input }),
+      // });
+      // const data = await response.json();
+
+      // Simulate API call with timeout
+      setTimeout(() => {
+        addMessage(
+          "assistant",
+          "This is a simulated response. Replace with actual API call."
+        );
+        setIsLoading(false);
+      }, 1000);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      addMessage(
+        "assistant",
+        "Sorry, there was an error processing your request."
+      );
+      setIsLoading(false);
+    }
+  };
+
+  // Function to add a message from external source (like PDF component)
+  const addExternalMessage = (content: string) => {
+    addMessage("assistant", content);
+  };
+
+  // Expose the addExternalMessage function to window for PDF component to use
+  useEffect(() => {
+    (window as any).addChatMessage = addExternalMessage;
+
+    return () => {
+      delete (window as any).addChatMessage;
+    };
+  }, []);
 
   return (
     <div className="flex flex-col h-full w-full bg-gradient-to-b from-slate-50 to-white">
