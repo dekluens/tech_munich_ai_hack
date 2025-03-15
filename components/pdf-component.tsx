@@ -48,8 +48,6 @@ export default function PdfComponent({ filename }: PdfComponentProps) {
         questionMarkNode.style.alignItems = "center";
         questionMarkNode.style.justifyContent = "center";
         questionMarkNode.style.padding = "4px";
-        questionMarkNode.style.boxShadow = "0 1px 3px rgba(0,0,0,0.2)";
-        questionMarkNode.style.transition = "background-color 0.2s ease";
 
         // Define our custom item with the DOM node.
         const questionMarkItem: ToolbarItem = {
