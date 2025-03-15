@@ -91,6 +91,7 @@ export default function ChatInterface() {
   };
 
   const addExternalMessage = async (content: string) => {
+    addMessage("user", "Please tell me what this means: '" + content + "'");
     addMessage("assistant", "Processing your selection...");
     // Show loading state before adding the message
     setIsLoading(true);
