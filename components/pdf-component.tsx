@@ -2,7 +2,11 @@
 
 import React, { useEffect, useRef } from "react";
 
-export default function PdfComponent() {
+interface PdfComponentProps {
+  filename: string;
+}
+
+export default function PdfComponent({ filename }: PdfComponentProps) {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -21,7 +25,7 @@ export default function PdfComponent() {
         // Load returns a Promise that resolves to the instance
         const instance = await NutrientViewer.load({
           container,
-          document: "/antragaufenthaltstitel.pdf",
+          document: `/${filename}`,
         });
 
         // Now that you have the instance, you can adjust the toolbar, etc.
