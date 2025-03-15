@@ -90,9 +90,32 @@ export default function ChatInterface() {
     }
   };
 
-  // Function to add a message from external source (like PDF component)
-  const addExternalMessage = (content: string) => {
-    addMessage("assistant", content);
+  const addExternalMessage = async (content: string) => {
+    addMessage("assistant", "Processing your selection...");
+    // Show loading state before adding the message
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/describe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+        },
+        body: JSON.stringify({
+          text: content,
+        }),
+      });
+
+      const data = await response.json();
+      console.log("API response:", data.text);
+      addMessage("assistant", data.text);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error calling API:", error);
+      addMessage("assistant", "Sorry, I couldn't process that text selection.");
+      setIsLoading(false);
+    }
   };
 
   // Expose the addExternalMessage function to window for PDF component to use
