@@ -2,12 +2,31 @@
 
 import React, { useEffect, useRef } from "react";
 
+interface ToolbarItem {
+  type: string;
+  id?: string;
+  title?: string;
+  node?: HTMLElement;
+  onPress?: (event: MouseEvent | TouchEvent) => void;
+}
+
+interface InlineTextSelectionToolbarArgs {
+  defaultItems: ToolbarItem[];
+  hasDesktopLayout: boolean;
+}
+
+interface TextSelection {
+  text?: string;
+  range?: Range;
+}
+
+
 interface PdfComponentProps {
   filename: string;
 }
 
 export default function PdfComponent({ filename }: PdfComponentProps) {
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -15,40 +34,49 @@ export default function PdfComponent({ filename }: PdfComponentProps) {
 
     async function fetchAndLoadPdf() {
       try {
-        // Load returns a Promise that resolves to the instance
+        // Create a custom DOM node for our larger question mark.
+        const questionMarkNode = document.createElement("div");
+        questionMarkNode.textContent = "?";
+        questionMarkNode.style.fontSize = "24px"; // Increase size here
+        questionMarkNode.style.lineHeight = "24px";
+        questionMarkNode.style.cursor = "pointer";
+
+        // Define our custom item with the DOM node.
+        const questionMarkItem: ToolbarItem = {
+          type: "custom",
+          id: "question-mark-button",
+          node: questionMarkNode,
+          onPress: () => {
+            // We'll replace `selection` in scope below
+          },
+        };
+
+        // Load the PDF, specifying the inline text selection toolbar items.
         const instance = await NutrientViewer.load({
           container,
           document: `/${filename}`,
-          // Here is where we define our custom inline text selection item:
           inlineTextSelectionToolbarItems: (
-            { defaultItems, hasDesktopLayout },
-            selection
+            { defaultItems, hasDesktopLayout }: InlineTextSelectionToolbarArgs,
+            selection: TextSelection
           ) => {
-            // Create a custom item that shows a "?" and logs the selected text
-            const questionMarkItem = {
-              type: "custom",
-              id: "question-mark-button",
-              title: "?", // Will display "?" on the button
-              onPress: () => {
-                // Log the selection to the console
-                // "selection.text" holds the currently selected text
-                if (selection && selection.text) {
-                  console.log("Selected text:", selection.text);
-                } else {
-                  console.log("No text selected.");
-                }
-              },
+            // Overwrite the onPress to have the correct selection context.
+            questionMarkItem.onPress = () => {
+              if (selection && selection.text) {
+                console.log("Selected text:", selection.text);
+              } else {
+                console.log("No text selected.");
+              }
             };
 
-            // Only add the custom button on desktop layout for this example
-            if (hasDesktopLayout) {
-              return [...defaultItems, questionMarkItem];
-            }
-            return defaultItems;
+            // Remove all default items so only our custom question mark remains.
+            // If you only wanted this on desktop, you could do a conditional check:
+            // if (hasDesktopLayout) { return [questionMarkItem]; }
+            // else { return defaultItems; }
+            return [questionMarkItem];
           },
         });
 
-        // Example of customizing the main toolbar items:
+        // Example: controlling the main (top) toolbar items
         const items = instance.toolbarItems;
         const allowedTypes = ["export-pdf", "search", "pager"];
         instance.setToolbarItems(
@@ -65,7 +93,9 @@ export default function PdfComponent({ filename }: PdfComponentProps) {
 
     // Unload when component unmounts
     return () => {
-      NutrientViewer?.unload(container);
+      if (container && NutrientViewer) {
+        NutrientViewer.unload(container);
+      }
     };
   }, [filename]);
 
