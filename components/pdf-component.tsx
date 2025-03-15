@@ -26,7 +26,6 @@ interface PdfComponentProps {
 
 export default function PdfComponent({ filename }: PdfComponentProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     const container = containerRef.current;
     const NutrientViewer = (window as any).NutrientViewer;
@@ -86,7 +85,14 @@ export default function PdfComponent({ filename }: PdfComponentProps) {
 
         // Example: controlling the main (top) toolbar items
         const items = instance.toolbarItems;
-        const allowedTypes = ["export-pdf", "search", "pager"];
+        const allowedTypes = [
+          "export-pdf",
+          "search",
+          "pager",
+          "zoom-in",
+          "zoom-out",
+          "zoom-mode",
+        ];
         instance.setToolbarItems(
           items.filter((item: any) => allowedTypes.includes(item.type))
         );

@@ -8,6 +8,8 @@ import {
   FileQuestion,
   Clock,
   ArrowLeft,
+  HelpCircle,
+  MousePointer,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -76,6 +78,46 @@ export default function ResourcesContainer() {
             </div>
           )}
         </div>
+
+        {/* Interactive PDF hint */}
+        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 my-1 rounded-r-md">
+          <div className="flex items-start">
+            <div className="mr-3 mt-1 text-blue-500">
+              <HelpCircle size={20} />
+            </div>
+            <div>
+              <h4 className="font-medium text-blue-700 mb-1">
+                Interactive PDF Assistance
+              </h4>
+              <p className="text-blue-800 text-sm">
+                Select any text in the PDF that you don't understand, and a{" "}
+                <HelpCircle className="inline h-4 w-4 text-blue-600" /> icon
+                will appear. Click it to get an explanation from the assistant.
+              </p>
+
+              <div className="mt-3 bg-white p-3 rounded border border-blue-200 flex items-center text-sm">
+                <div className="flex items-center mr-4">
+                  <MousePointer size={14} className="mr-1 text-gray-500" />
+                  <span className="text-gray-700">Select text</span>
+                </div>
+                <div className="flex items-center mr-4">
+                  <span className="mx-2">→</span>
+                </div>
+                <div className="flex items-center mr-4">
+                  <HelpCircle size={14} className="mr-1 text-blue-600" />
+                  <span className="text-gray-700">Click icon</span>
+                </div>
+                <div className="flex items-center mr-4">
+                  <span className="mx-2">→</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-gray-700">Get explanation</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="flex-1">
           <PdfComponent filename="antragaufenthaltstitel.pdf" />
         </div>
