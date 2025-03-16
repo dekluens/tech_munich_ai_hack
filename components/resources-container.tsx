@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PdfComponent from "./pdf-component";
 import {
   ChevronRight,
@@ -30,6 +30,8 @@ const defaultResources: Resource[] = [];
 export default function ResourcesContainer() {
   const [selectedResource, setSelectedResource] = useState<number | null>(null);
   const [resources, setResources] = useState<Resource[]>(defaultResources);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Get resources from chat component if available
   useEffect(() => {
@@ -44,6 +46,14 @@ export default function ResourcesContainer() {
         event.detail.resources.length > 0
       ) {
         setResources(event.detail.resources);
+
+        if (animationTimeoutRef.current) {
+          clearTimeout(animationTimeoutRef.current);
+        }
+
+        animationTimeoutRef.current = setTimeout(() => {
+          setIsAnimating(true);
+        }, 300);
       }
     };
 
@@ -64,10 +74,13 @@ export default function ResourcesContainer() {
       }
     }
 
-    // Clean up event listener
+    // Clean up event listener and timeout
     return () => {
       if (typeof window !== "undefined") {
         window.removeEventListener("resources-updated", handleResourcesUpdated);
+      }
+      if (animationTimeoutRef.current) {
+        clearTimeout(animationTimeoutRef.current);
       }
     };
   }, []); // Remove resources dependency to avoid infinite loop
@@ -153,15 +166,28 @@ export default function ResourcesContainer() {
 
       {resources.length > 0 ? (
         <div className="space-y-4">
-          {resources.map((resource) => (
+          {resources.map((resource, index) => (
             <div
               key={resource.id}
               onClick={() => setSelectedResource(resource.id)}
-              className={`bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer border ${
-                resource.type === "form"
-                  ? "border-l-4 border-l-blue-500 border-t-gray-200 border-r-gray-200 border-b-gray-200"
-                  : "border-gray-200"
-              }`}
+              className={`bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer border 
+                ${
+                  resource.type === "form"
+                    ? "border-l-4 border-l-blue-500 border-t-gray-200 border-r-gray-200 border-b-gray-200"
+                    : "border-gray-200"
+                }
+                transform transition-all duration-500 ease-out
+                ${
+                  isAnimating
+                    ? "translate-x-0 opacity-100"
+                    : "-translate-x-full opacity-0"
+                }
+                ${index > 0 ? `delay-${Math.min(index * 100, 500)}` : ""}
+              `}
+              style={{
+                transitionDelay:
+                  index > 0 ? `${Math.min(index * 100, 500)}ms` : "0ms",
+              }}
             >
               <div className="flex items-start">
                 <div
