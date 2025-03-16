@@ -119,7 +119,7 @@ export default function ResourcesContainer() {
         </div>
 
         <div className="flex-1">
-          <PdfComponent filename="antragaufenthaltstitel.pdf" />
+          <PdfComponent filename="application_document.pdf" />
         </div>
       </div>
     );
