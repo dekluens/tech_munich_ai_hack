@@ -12,6 +12,17 @@ interface Message {
   content: string;
 }
 
+// Define resource type
+interface Resource {
+  id: number;
+  title: string;
+  description: string;
+  filename: string;
+  type: string;
+  complexity: string;
+  estimatedTime: string;
+}
+
 export default function ChatInterface() {
   // Replace useChat with manual state management
   const [messages, setMessages] = useState<Message[]>([
@@ -24,6 +35,8 @@ export default function ChatInterface() {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  // Add resources state
+  const [resources, setResources] = useState<Resource[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -77,8 +90,39 @@ export default function ChatInterface() {
       });
 
       const data = await response.json();
-      console.log("API response:", data.text);
+      console.log("API response:", data);
       addMessage("assistant", data.text);
+
+      // Check if the response contains new resources
+      if (
+        data.documents &&
+        data.documents.documents &&
+        data.documents.documents.length > 0
+      ) {
+        // Add new resources to the state
+        const newResources = data.documents.documents.map(
+          (doc: any, index: number) => ({
+            id: resources.length + index + 1, // Generate new IDs
+            title: doc.title,
+            description: doc.description || "",
+            filename: doc.filename,
+            type: doc.type.toLowerCase(),
+            complexity: doc.complexity.toLowerCase(),
+            estimatedTime: doc.estimatedTime,
+          })
+        );
+
+        setResources((prevResources) => {
+          // Filter out duplicates by filename
+          const existingFilenames = prevResources.map((r) => r.filename);
+          const uniqueNewResources = newResources.filter(
+            (r) => !existingFilenames.includes(r.filename)
+          );
+
+          return [...prevResources, ...uniqueNewResources];
+        });
+      }
+
       setIsLoading(false);
     } catch (error) {
       console.error("Error calling API:", error);
@@ -126,6 +170,15 @@ export default function ChatInterface() {
       delete (window as any).addChatMessage;
     };
   }, []);
+
+  // Expose the resources to window for ResourcesContainer to use
+  useEffect(() => {
+    (window as any).chatResources = resources;
+
+    return () => {
+      delete (window as any).chatResources;
+    };
+  }, [resources]);
 
   return (
     <div className="flex flex-col h-full w-full bg-gradient-to-b from-slate-50 to-white">
