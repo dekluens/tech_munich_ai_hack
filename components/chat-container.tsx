@@ -102,7 +102,7 @@ export default function ChatInterface() {
         // Add new resources to the state
         const newResources = data.documents.documents.map(
           (doc: any, index: number) => ({
-            id: resources.length + index + 1, // Generate new IDs
+            id: Date.now() + index, // Use timestamp + index for unique IDs
             title: doc.title,
             description: doc.description || "",
             filename: doc.filename,
@@ -112,12 +112,21 @@ export default function ChatInterface() {
           })
         );
 
+        console.log("Adding new resources:", newResources);
+
         setResources((prevResources) => {
           // Filter out duplicates by filename
           const existingFilenames = prevResources.map((r) => r.filename);
           const uniqueNewResources = newResources.filter(
             (r) => !existingFilenames.includes(r.filename)
           );
+
+          console.log("Unique new resources:", uniqueNewResources);
+          console.log("Previous resources:", prevResources);
+          console.log("Updated resources:", [
+            ...prevResources,
+            ...uniqueNewResources,
+          ]);
 
           return [...prevResources, ...uniqueNewResources];
         });
@@ -174,6 +183,15 @@ export default function ChatInterface() {
   // Expose the resources to window for ResourcesContainer to use
   useEffect(() => {
     (window as any).chatResources = resources;
+
+    // Dispatch a custom event when resources change
+    if (typeof window !== "undefined" && resources.length > 0) {
+      console.log("Dispatching resources-updated event with:", resources);
+      const event = new CustomEvent("resources-updated", {
+        detail: { resources },
+      });
+      window.dispatchEvent(event);
+    }
 
     return () => {
       delete (window as any).chatResources;

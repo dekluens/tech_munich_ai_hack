@@ -33,32 +33,44 @@ export default function ResourcesContainer() {
 
   // Get resources from chat component if available
   useEffect(() => {
-    const checkForResources = () => {
+    console.log("Resources state in component:", resources);
+
+    // Function to handle the custom event
+    const handleResourcesUpdated = (event: any) => {
+      console.log("Received resources-updated event:", event.detail.resources);
+      if (
+        event.detail &&
+        event.detail.resources &&
+        event.detail.resources.length > 0
+      ) {
+        setResources(event.detail.resources);
+      }
+    };
+
+    // Add event listener for the custom event
+    if (typeof window !== "undefined") {
+      window.addEventListener("resources-updated", handleResourcesUpdated);
+
+      // Check if resources are already available on window
       if (
         (window as any).chatResources &&
         (window as any).chatResources.length > 0
       ) {
+        console.log(
+          "Found existing resources on window:",
+          (window as any).chatResources
+        );
         setResources((window as any).chatResources);
       }
-    };
-
-    // Check immediately and set up an interval to check periodically
-    checkForResources();
-
-    // Set up a MutationObserver to watch for changes to window.chatResources
-    const observer = new MutationObserver((mutations) => {
-      checkForResources();
-    });
-
-    // Observe the window object for changes
-    if (typeof window !== "undefined") {
-      observer.observe(document, { subtree: true, childList: true });
     }
 
+    // Clean up event listener
     return () => {
-      observer.disconnect();
+      if (typeof window !== "undefined") {
+        window.removeEventListener("resources-updated", handleResourcesUpdated);
+      }
     };
-  }, []);
+  }, []); // Remove resources dependency to avoid infinite loop
 
   // If a resource is selected, show the PDF component
   if (selectedResource !== null) {
