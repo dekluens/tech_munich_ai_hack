@@ -65,37 +65,35 @@ export default function ChatInterface() {
     setIsLoading(true);
 
     try {
-      // Here you would call your API to get a response
-      // For example:
-      // const response = await fetch('/api/chat', {
-      //   method: 'POST',
-      //   body: JSON.stringify({ message: input }),
-      // });
-      // const data = await response.json();
+      const response = await fetch("http://127.0.0.1:8000/cognee-search/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+        },
+        body: JSON.stringify({
+          query: input,
+        }),
+      });
 
-      // Simulate API call with timeout
-      setTimeout(() => {
-        addMessage(
-          "assistant",
-          "This is a simulated response. Replace with actual API call."
-        );
-        setIsLoading(false);
-      }, 1000);
+      const data = await response.json();
+      console.log("API response:", data.text);
+      addMessage("assistant", data.text);
+      setIsLoading(false);
     } catch (error) {
-      console.error("Error sending message:", error);
-      addMessage(
-        "assistant",
-        "Sorry, there was an error processing your request."
-      );
+      console.error("Error calling API:", error);
+      addMessage("assistant", "Sorry, I couldn't find an answer to that.");
       setIsLoading(false);
     }
   };
 
   const addExternalMessage = async (content: string) => {
     addMessage("user", "Please tell me what this means: '" + content + "'");
-    addMessage("assistant", "Processing your selection...");
-    // Show loading state before adding the message
-    setIsLoading(true);
+
+    setTimeout(() => {
+      addMessage("assistant", "Please give me a moment...");
+      setIsLoading(true);
+    }, 1000);
 
     try {
       const response = await fetch("http://127.0.0.1:8000/describe", {
